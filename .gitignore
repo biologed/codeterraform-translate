@@ -1,0 +1,51 @@
+# --- сборка ---------------------------------------------------------------
+build/
+out/
+x64/
+Translator/          # каталог объектных файлов от старой сборки в Visual Studio
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.lib
+
+# Проектные файлы Visual Studio: сборка идёт через CMake, а эти генерируются
+# самой студией и весят под мегабайт из-за перечисленных в них заголовков.
+*.sln
+*.vcxproj
+*.vcxproj.*
+.vs/
+
+# --- зависимости ----------------------------------------------------------
+# vcpkg клонируется отдельно (см. README, раздел "Сборка"), в репозитории
+# ему делать нечего - это полтерабайта чужой истории.
+vcpkg/
+vcpkg_installed/
+tools/jstest/node_modules/
+__pycache__/
+*.pyc
+
+# --- файлы игры и всё, что из них получено --------------------------------
+# В репозиторий не кладём ничего, что принадлежит игре: ни сам exe, ни
+# распакованный фронтенд, ни выгруженный английский каталог строк.
+*.exe
+*_assets/
+*_strings/
+.assets_cache/
+locale_patch/
+catalog.json
+catalog.flat.json
+translations.skeleton.json
+strings_with_placeholders.txt
+
+# Рабочий файл перевода: полный каталог с английскими оригиналами.
+# Собирается локально командой tools/locale_sync.py work (см. README).
+locale/locale_ru.work.json
+locale_ru.work.json
+
+# --- то, что игра пишет рядом с DLL ---------------------------------------
+translator_log.txt
+dump.txt
+dump_html.txt
+dump_focus.txt
+dump_dom.json

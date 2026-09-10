@@ -1,0 +1,10 @@
+{
+  "name": "translator",
+  "version": "0.1.0",
+  "dependencies": [
+    "brotli",
+    "minhook",
+    "nlohmann-json",
+    "webview2"
+  ]
+}
