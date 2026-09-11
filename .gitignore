@@ -38,10 +38,17 @@ catalog.flat.json
 translations.skeleton.json
 strings_with_placeholders.txt
 
-# Рабочий файл перевода: полный каталог с английскими оригиналами.
-# Собирается локально командой tools/locale_sync.py work (см. README).
+# Рабочие файлы перевода: полный каталог с английскими оригиналами рядом с
+# ключами. Переводить в них удобно, но в репозиторий они не нужны - это текст
+# игры, а не наш перевод. В гит идёт только locale/locale_ru.json, он
+# получается из рабочего командой tools/locale_sync.py export (см. README).
+# Пути со слэшем впереди - только в корне проекта, чтобы не задеть
+# locale/locale_ru.json.
 locale/locale_ru.work.json
 locale_ru.work.json
+/locale_ru.json
+/locale_en.json
+/catalog*.json
 
 # --- то, что игра пишет рядом с DLL ---------------------------------------
 translator_log.txt
@@ -49,3 +56,6 @@ dump.txt
 dump_html.txt
 dump_focus.txt
 dump_dom.json
+
+# Собранный релиз (делается локально, в гит не нужен)
+release/

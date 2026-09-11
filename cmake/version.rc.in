@@ -1,0 +1,43 @@
+// Ресурс с описанием файла (то, что Windows показывает в "Свойства ->
+// Подробно"), общий шаблон для DLL и лаунчера.
+//
+// ЗАЧЕМ. Без этого блока бинарник выглядит как безымянный файл без автора,
+// версии и назначения. Для эвристик антивирусов и для SmartScreen это плохой
+// признак сам по себе, а для пользователя - единственный способ понять, что
+// за файл у него в папке игры и откуда он взялся. Ни то, ни другое не
+// заменяет подпись сертификатом, но убирает часть поводов для подозрений.
+//
+// Значения подставляет CMake (см. AddVersionInfo в корневом CMakeLists.txt).
+
+#include <windows.h>
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION     @TRANSLATOR_VERSION_MAJOR@,@TRANSLATOR_VERSION_MINOR@,@TRANSLATOR_VERSION_PATCH@,0
+ PRODUCTVERSION  @TRANSLATOR_VERSION_MAJOR@,@TRANSLATOR_VERSION_MINOR@,@TRANSLATOR_VERSION_PATCH@,0
+ FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+ FILEFLAGS       0x0L
+ FILEOS          VOS_NT_WINDOWS32
+ FILETYPE        @TRANSLATOR_RC_FILETYPE@
+ FILESUBTYPE     VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        // 0419 - русский, 04b0 - кодировка Unicode.
+        BLOCK "041904b0"
+        BEGIN
+            VALUE "CompanyName",      "@TRANSLATOR_AUTHOR@"
+            VALUE "FileDescription",  "@TRANSLATOR_RC_DESCRIPTION@"
+            VALUE "FileVersion",      "@TRANSLATOR_VERSION@"
+            VALUE "InternalName",     "@TRANSLATOR_RC_INTERNAL_NAME@"
+            VALUE "LegalCopyright",   "@TRANSLATOR_AUTHOR@. Свободная лицензия, исходный код открыт."
+            VALUE "OriginalFilename", "@TRANSLATOR_RC_ORIGINAL_NAME@"
+            VALUE "ProductName",      "@TRANSLATOR_PRODUCT_NAME@"
+            VALUE "ProductVersion",   "@TRANSLATOR_VERSION@"
+            VALUE "Comments",         "Любительский перевод игры. Исходный код: @TRANSLATOR_URL@"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x419, 1200
+    END
+END

@@ -28,6 +28,12 @@
 import json
 import sys
 
+# Русский текст в выводе + чужая кодировка консоли = UnicodeEncodeError
+# на ровном месте (подробности в _console.py).
+from _console import enable_utf8_output
+
+enable_utf8_output()
+
 
 def load(path):
     with open(path, encoding="utf-8") as f:

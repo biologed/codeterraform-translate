@@ -38,6 +38,12 @@ import re
 import struct
 import sys
 
+# Русский текст в выводе + чужая кодировка консоли = UnicodeEncodeError
+# на ровном месте (подробности в _console.py).
+from _console import enable_utf8_output
+
+enable_utf8_output()
+
 try:
     import brotli
 except ImportError:

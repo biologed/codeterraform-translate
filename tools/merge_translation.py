@@ -27,6 +27,12 @@ import os
 import re
 import sys
 
+# Русский текст в выводе + чужая кодировка консоли = UnicodeEncodeError
+# на ровном месте (подробности в _console.py).
+from _console import enable_utf8_output
+
+enable_utf8_output()
+
 PLACEHOLDER = re.compile(r"\{[a-zA-Z_][a-zA-Z0-9_]*\}")
 
 
