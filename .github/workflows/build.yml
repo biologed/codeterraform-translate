@@ -7,11 +7,13 @@
 # выложенный бинарник собран именно из этого открытого исходного кода:
 #
 #   * сборка идёт на чужой машине по видимому всем сценарию;
-#   * рядом с артефактом лежат SHA-256 файлов;
+#   * рядом с файлами лежат их SHA-256;
 #   * actions/attest-build-provenance подписывает происхождение сборки, и
 #     любой может проверить её командой `gh attestation verify <файл> -R <репо>`.
 #
-# Сюда же вынесен тест скрипта перевода - он не требует ни игры, ни Windows.
+# На выходе ровно один артефакт с плоским набором файлов - тем же, что игрок
+# копирует в папку игры. Раскладку собирает tools/make_release.py, чтобы она
+# была одинаковой и здесь, и при локальной сборке.
 
 name: Сборка
 
@@ -27,8 +29,8 @@ jobs:
     name: Windows x64
     runs-on: windows-latest
     permissions:
-      contents: read
-      id-token: write        # нужно для подписи происхождения сборки
+      contents: write       # нужно, чтобы приложить архив к релизу по тегу
+      id-token: write       # нужно для подписи происхождения сборки
       attestations: write
 
     steps:
@@ -44,34 +46,31 @@ jobs:
       - name: Собрать
         run: cmake --build build --config Release
 
-      - name: Посчитать SHA-256
-        run: |
-          $files = @(
-            "build/dll/Release/Translator.dll",
-            "build/injector/Release/TranslatorLauncher.exe"
-          )
-          $files | ForEach-Object {
-            $h = (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower()
-            "$h  $(Split-Path $_ -Leaf)"
-          } | Tee-Object -FilePath SHA256SUMS.txt
+      # Складывает в release/CodeTerraform-RU/ всё, что нужно игроку, плоским
+      # списком, и считает SHA256SUMS.txt.
+      - name: Собрать комплект
+        run: python tools/make_release.py
 
       - name: Подписать происхождение сборки
         uses: actions/attest-build-provenance@v1
         with:
           subject-path: |
-            build/dll/Release/Translator.dll
-            build/injector/Release/TranslatorLauncher.exe
+            build/bin/Translator.dll
+            build/bin/TranslatorLauncher.exe
 
-      - name: Выложить артефакты
+      # Скачанный артефакт - это сразу нужные файлы без вложенных папок:
+      # upload-artifact берёт общего родителя путей, а он здесь один.
+      - name: Выложить артефакт
         uses: actions/upload-artifact@v4
         with:
-          name: translator-windows-x64
-          path: |
-            build/dll/Release/Translator.dll
-            build/injector/Release/TranslatorLauncher.exe
-            locale/locale_ru.json
-            install/
-            SHA256SUMS.txt
+          name: CodeTerraform-RU
+          path: release/CodeTerraform-RU/*
+
+      - name: Приложить архив к релизу
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.ref_name }}" "release/CodeTerraform-RU.zip" --clobber
 
   test:
     name: Тест скрипта перевода

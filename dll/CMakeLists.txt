@@ -48,10 +48,20 @@ target_link_libraries(Translator PRIVATE
 # "webview2" (см. vcpkg.json) вместе с целью unofficial::webview2::webview2 -
 # отдельно ставить NuGet-пакет Microsoft.Web.WebView2 не нужно.
 
-# Копируем translations.json рядом со скомпилированной DLL, чтобы
-# Translate::Reload() сразу мог его найти.
+# Кладём рядом со собранной DLL то, что она читает при старте: словарь для
+# перевода по DOM и сам перевод. После сборки build/bin можно целиком копировать
+# в папку игры - не хватит только лаунчера с батником, их добавляет
+# tools/make_release.py.
+#
+# Файлы с русскими именами ("Запустить с переводом.bat", "ЧИТАЙ МЕНЯ.txt")
+# здесь намеренно НЕ копируются: в цепочке Git Bash -> MSBuild -> CMake имя
+# перекодируется и copy_if_different не находит файл, роняя всю сборку. Их
+# кладёт в архив make_release.py, у Python с Unicode в путях проблем нет.
 add_custom_command(TARGET Translator POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/translations.json"
         "$<TARGET_FILE_DIR:Translator>/translations.json"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_SOURCE_DIR}/locale/locale_ru.json"
+        "$<TARGET_FILE_DIR:Translator>/locale_ru.json"
 )
