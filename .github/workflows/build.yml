@@ -1,0 +1,89 @@
+# Сборка на GitHub Actions.
+#
+# ЗАЧЕМ ЭТО НУЖНО ИМЕННО ЗДЕСЬ. Мод внедряет DLL в чужой процесс, поэтому
+# антивирусы регулярно поднимают на него ложную тревогу, а SmartScreen ругается
+# на "неизвестного издателя". Полностью это лечится только подписью файла
+# сертификатом, но половину недоверия снимает возможность ПРОВЕРИТЬ, что
+# выложенный бинарник собран именно из этого открытого исходного кода:
+#
+#   * сборка идёт на чужой машине по видимому всем сценарию;
+#   * рядом с артефактом лежат SHA-256 файлов;
+#   * actions/attest-build-provenance подписывает происхождение сборки, и
+#     любой может проверить её командой `gh attestation verify <файл> -R <репо>`.
+#
+# Сюда же вынесен тест скрипта перевода - он не требует ни игры, ни Windows.
+
+name: Сборка
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Windows x64
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      id-token: write        # нужно для подписи происхождения сборки
+      attestations: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # vcpkg на образах GitHub уже установлен, отдельно клонировать не нужно.
+      - name: Настроить проект
+        run: >
+          cmake -B build -S . -A x64
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+          -DTRANSLATOR_URL="${{ github.server_url }}/${{ github.repository }}"
+
+      - name: Собрать
+        run: cmake --build build --config Release
+
+      - name: Посчитать SHA-256
+        run: |
+          $files = @(
+            "build/dll/Release/Translator.dll",
+            "build/injector/Release/TranslatorLauncher.exe"
+          )
+          $files | ForEach-Object {
+            $h = (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower()
+            "$h  $(Split-Path $_ -Leaf)"
+          } | Tee-Object -FilePath SHA256SUMS.txt
+
+      - name: Подписать происхождение сборки
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: |
+            build/dll/Release/Translator.dll
+            build/injector/Release/TranslatorLauncher.exe
+
+      - name: Выложить артефакты
+        uses: actions/upload-artifact@v4
+        with:
+          name: translator-windows-x64
+          path: |
+            build/dll/Release/Translator.dll
+            build/injector/Release/TranslatorLauncher.exe
+            locale/locale_ru.json
+            install/
+            SHA256SUMS.txt
+
+  test:
+    name: Тест скрипта перевода
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Установить зависимости
+        working-directory: tools/jstest
+        run: npm ci
+      - name: Прогнать тесты
+        working-directory: tools/jstest
+        run: npm test

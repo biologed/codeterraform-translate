@@ -26,6 +26,11 @@ add_library(Translator SHARED
 
 target_compile_features(Translator PRIVATE cxx_std_17)
 
+add_version_info(Translator
+    "Модуль перевода Code: Terraform на русский"
+    "Translator.dll"
+    VFT_DLL)
+
 find_package(minhook CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-webview2 CONFIG REQUIRED)
