@@ -2,6 +2,12 @@
 import struct
 import sys
 
+# Русский текст в выводе + чужая кодировка консоли = UnicodeEncodeError
+# на ровном месте (подробности в _console.py).
+from _console import enable_utf8_output
+
+enable_utf8_output()
+
 path = sys.argv[1] if len(sys.argv) > 1 else "code-terraform.exe"
 anchor = (sys.argv[2] if len(sys.argv) > 2 else "/index.html").encode()
 

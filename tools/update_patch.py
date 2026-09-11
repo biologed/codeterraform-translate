@@ -33,6 +33,12 @@ import shutil
 import subprocess
 import sys
 
+# Русский текст в выводе + чужая кодировка консоли = UnicodeEncodeError
+# на ровном месте (подробности в _console.py).
+from _console import enable_utf8_output
+
+enable_utf8_output()
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 

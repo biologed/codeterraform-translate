@@ -24,6 +24,13 @@ on:
   pull_request:
   workflow_dispatch:
 
+# Вывод скриптов на раннере уходит в пайп, а не в терминал, и Python берёт
+# системную кодировку - на английской Windows это cp1252, где кириллицы нет.
+# Сами скрипты от этого уже защищены (tools/_console.py), но переменная
+# страхует и всё остальное: подпроцессы, сторонние утилиты, будущие шаги.
+env:
+  PYTHONUTF8: "1"
+
 jobs:
   build:
     name: Windows x64
@@ -51,8 +58,11 @@ jobs:
       - name: Собрать комплект
         run: python tools/make_release.py
 
+      # В сборках из пул-реквестов пропускаем: там нет прав на подпись
+      # (id-token), и шаг упал бы, хотя сама сборка в порядке.
       - name: Подписать происхождение сборки
-        uses: actions/attest-build-provenance@v1
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@v2
         with:
           subject-path: |
             build/bin/Translator.dll

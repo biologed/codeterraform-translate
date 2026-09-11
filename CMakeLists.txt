@@ -1,4 +1,17 @@
 cmake_minimum_required(VERSION 3.20)
+
+# Собираем зависимости статически (static-md = статические библиотеки плюс
+# системная динамическая CRT). Без этой строки vcpkg берёт триплет по
+# умолчанию, и рядом с Translator.dll оказываются minhook.x64.dll,
+# brotlidec.dll и brotlicommon.dll. В релизный архив они не попадают, в папку
+# игры их никто не копирует - и DLL молча не грузится, перевода просто нет.
+# Проверить легко: после сборки в build/bin не должно быть ничего, кроме
+# Translator.dll, TranslatorLauncher.exe и двух json.
+#
+# Строка обязана стоять ДО project(): именно там отрабатывает toolchain-файл
+# vcpkg, который её читает.
+set(VCPKG_TARGET_TRIPLET "x64-windows-static-md" CACHE STRING "Триплет vcpkg")
+
 project(Translator VERSION 1.0.0 LANGUAGES CXX)
 
 # Всё собранное складываем в одну папку build/bin, без вложенности по целям и

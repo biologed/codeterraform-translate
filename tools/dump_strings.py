@@ -42,6 +42,12 @@ import os
 import re
 import sys
 
+# Русский текст в выводе + чужая кодировка консоли = UnicodeEncodeError
+# на ровном месте (подробности в _console.py).
+from _console import enable_utf8_output
+
+enable_utf8_output()
+
 
 MIN_GROUPS = 20          # каталог интерфейса заведомо больше
 SPREAD_KEY = "\x00spread"  # служебный ключ: список спредов внутри объекта
